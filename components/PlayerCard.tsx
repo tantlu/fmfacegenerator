@@ -16,9 +16,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
 
   /**
    * Refined Positioning Logic:
-   * playerData.photoX and playerData.photoY are pixel offsets relative to a 224px container.
-   * This ensures the zoom and position look identical to the cropper regardless of the screen size
-   * at the time of cropping.
+   * playerData.photoX and playerData.photoY are normalized offsets.
    */
   const photoStyle: React.CSSProperties = {
     transform: `translate(${playerData.photoX}px, ${playerData.photoY}px) scale(${playerData.photoZoom})`,
@@ -34,7 +32,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
       ref={cardRef}
       id="player-card-export"
       style={{ width: '260px', height: '310px', ...cardBackgroundStyle }}
-      className="relative overflow-hidden rounded-2xl border border-white/20 shadow-2xl flex flex-col"
+      className="relative overflow-hidden rounded-2xl border border-white/20 shadow-2xl flex flex-col group/card"
     >
       {/* Subtle Background Blurred Logo Effect */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -77,10 +75,10 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
           className="relative w-56 h-56 cursor-pointer group/photo -mt-1"
           onClick={onPhotoClick}
         >
-          {/* Halo Glow behind the player */}
-          <div className="absolute inset-0 bg-white/20 rounded-full blur-3xl scale-110 opacity-40" />
+          {/* Dynamic Halo Glow behind the player - Intensifies on card hover */}
+          <div className="absolute inset-0 bg-[#00f0ff]/10 rounded-full blur-3xl scale-110 opacity-30 group-hover/card:opacity-60 group-hover/card:scale-125 transition-all duration-500" />
           
-          <div className="relative w-full h-full rounded-full border-[4px] border-white/40 p-1.5 bg-black/10 backdrop-blur-sm overflow-hidden shadow-[0_0_40px_rgba(255,255,255,0.2)] flex items-center justify-center">
+          <div className="relative w-full h-full rounded-full border-[4px] border-white/40 p-1.5 bg-black/10 backdrop-blur-sm overflow-hidden shadow-[0_0_20px_rgba(0,240,255,0.2)] group-hover/card:shadow-[0_0_40px_rgba(0,240,255,0.5)] group-hover/card:border-[#00f0ff]/60 transition-all duration-300 flex items-center justify-center">
             {playerData.photoUrl ? (
               <img 
                 src={playerData.photoUrl} 
@@ -93,9 +91,21 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
               </div>
             )}
             
-            {/* Hover Indicator */}
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/photo:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
-              <Crop size={32} className="text-white" />
+            {/* Visual Guides Overlay (Crosshair) - Subtle focus area for alignment */}
+            <div className="absolute inset-0 pointer-events-none opacity-0 group-hover/photo:opacity-100 transition-opacity duration-300">
+               <div className="absolute inset-0 flex items-center justify-center">
+                 <div className="w-px h-full bg-[#00f0ff]/20" />
+                 <div className="h-px w-full bg-[#00f0ff]/20" />
+               </div>
+               {/* Center Focus Circle */}
+               <div className="absolute inset-0 flex items-center justify-center">
+                 <div className="w-24 h-24 rounded-full border border-[#00f0ff]/10" />
+               </div>
+            </div>
+
+            {/* Hover UI Overlay */}
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/photo:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
+              <Crop size={32} className="text-[#00f0ff]" />
               <span className="text-[10px] font-bold text-white uppercase tracking-widest">Adjust View</span>
             </div>
           </div>

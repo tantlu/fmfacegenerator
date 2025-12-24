@@ -7,15 +7,16 @@ import { INITIAL_PLAYER_DATA, POSITIONS } from './constants';
 import PlayerCard from './components/PlayerCard';
 import ControlPanel from './components/ControlPanel';
 import ImageCropper from './components/ImageCropper';
+import { Settings2 } from 'lucide-react';
 
 const App: React.FC = () => {
   const [playerData, setPlayerData] = useState<PlayerData>(INITIAL_PLAYER_DATA);
   const [isDownloading, setIsDownloading] = useState(false);
   const [croppingImage, setCroppingImage] = useState<string | null>(null);
+  const [exportScale, setExportScale] = useState<number>(2); // Default 2x (High Quality)
   const cardRef = useRef<HTMLDivElement>(null);
 
   const handleRandomize = useCallback(() => {
-    // Randomize basic details but keep stats removed
     setPlayerData(prev => ({
       ...prev,
       age: Math.floor(Math.random() * 20) + 16,
@@ -34,10 +35,13 @@ const App: React.FC = () => {
       // Wait for rendering stability
       await new Promise(resolve => setTimeout(resolve, 500));
       
+      const width = 260;
+      const height = 310;
+      
       const dataUrl = await toPng(cardRef.current, {
-        pixelRatio: 2, // High fidelity export
-        width: 260,
-        height: 310,
+        pixelRatio: exportScale,
+        width: width,
+        height: height,
         style: {
           transform: 'scale(1)',
           transformOrigin: 'top left'
@@ -49,7 +53,7 @@ const App: React.FC = () => {
       saveAs(dataUrl, `${fileName}-face-card.png`);
     } catch (error) {
       console.error('Download error:', error);
-      alert('Failed to generate image.');
+      alert('Failed to generate image. Try a lower resolution.');
     } finally {
       setIsDownloading(false);
     }
@@ -92,8 +96,30 @@ const App: React.FC = () => {
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
              style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
         
-        <div className="lg:hidden mb-6 text-white/40 text-[10px] font-bold uppercase tracking-widest text-center">
-          Preview
+        {/* Export Settings Bar */}
+        <div className="mb-8 flex flex-col items-center gap-4 z-20">
+          <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-2xl backdrop-blur-xl">
+             <Settings2 size={14} className="text-[#00f0ff]" />
+             <span className="text-[10px] font-black text-white/40 uppercase tracking-widest mr-2">Export Quality:</span>
+             <div className="flex gap-1">
+               {[1, 2, 4].map(scale => (
+                 <button
+                   key={scale}
+                   onClick={() => setExportScale(scale)}
+                   className={`px-3 py-1 rounded-lg text-[10px] font-black transition-all ${
+                     exportScale === scale 
+                       ? 'bg-[#ff0055] text-white shadow-lg shadow-pink-500/20' 
+                       : 'text-white/30 hover:text-white/60 bg-white/5'
+                   }`}
+                 >
+                   {scale}x
+                 </button>
+               ))}
+             </div>
+          </div>
+          <p className="text-[9px] text-white/20 uppercase font-bold tracking-[0.2em]">
+            Current: {260 * exportScale} x {310 * exportScale} px
+          </p>
         </div>
 
         <div className="relative group transition-transform duration-500 hover:scale-[1.05]">

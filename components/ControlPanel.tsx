@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { PlayerData } from '../types';
 import { POSITIONS, COUNTRIES } from '../constants';
-import { Shuffle, Download, User, Info, Globe, Shield, Palette, Crop, Maximize } from 'lucide-react';
+import { Shuffle, Download, User, Info, Globe, Shield, Palette, Crop, Maximize, Move } from 'lucide-react';
 
 interface ControlPanelProps {
   playerData: PlayerData;
@@ -22,8 +22,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   setCroppingImage
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setPlayerData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    const val = type === 'number' ? parseFloat(value) : value;
+    setPlayerData(prev => ({ ...prev, [name]: val }));
   };
 
   const handleCountrySelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -38,6 +39,36 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
     }
   };
 
+  // Helper to extract dominant colors from an image
+  const extractDominantColors = (imageUrl: string) => {
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      
+      // Sample a few pixels to get colors
+      // In a real app we'd use a more complex median-cut algorithm
+      // For this UI, we'll take top-left and center samples
+      const p1 = ctx.getImageData(canvas.width * 0.2, canvas.height * 0.2, 1, 1).data;
+      const p2 = ctx.getImageData(canvas.width * 0.5, canvas.height * 0.5, 1, 1).data;
+      
+      const rgbToHex = (r: number, g: number, b: number) => 
+        "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+
+      setPlayerData(prev => ({
+        ...prev,
+        primaryColor: rgbToHex(p1[0], p1[1], p1[2]),
+        secondaryColor: rgbToHex(p2[0], p2[1], p2[2])
+      }));
+    };
+    img.src = imageUrl;
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, field: keyof PlayerData) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -47,6 +78,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         if (field === 'photoUrl') {
           setPlayerData(prev => ({ ...prev, photoUrl: result, photoZoom: 1, photoX: 0, photoY: 0 }));
           setCroppingImage(result);
+        } else if (field === 'clubLogoUrl') {
+          setPlayerData(prev => ({ ...prev, clubLogoUrl: result }));
+          extractDominantColors(result);
         } else {
           setPlayerData(prev => ({ ...prev, [field]: result }));
         }
@@ -154,7 +188,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             </div>
           </div>
           <p className="mt-2 text-[9px] text-white/30 uppercase tracking-widest italic leading-relaxed">
-            Note: The logo image will also be blurred in the background automatically.
+            Note: Changing the Club Crest will automatically update these colors.
           </p>
         </section>
 
@@ -192,6 +226,50 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                   </div>
                   <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, 'photoUrl')} accept="image/*" />
                 </label>
+              </div>
+            </div>
+
+            {/* Fine Tuning Sliders */}
+            <div className="p-3 bg-white/5 rounded-xl border border-white/10 space-y-4">
+              <div className="flex items-center gap-2 mb-2 text-[10px] text-[#00f0ff] font-black uppercase tracking-widest">
+                <Move size={12} /> Fine Tuning
+              </div>
+              
+              <div className="space-y-1">
+                <div className="flex justify-between text-[9px] font-bold text-white/40 uppercase">
+                  <span>Zoom</span>
+                  <span>{playerData.photoZoom.toFixed(1)}x</span>
+                </div>
+                <input 
+                  type="range" name="photoZoom" min="0.5" max="5" step="0.1"
+                  value={playerData.photoZoom} onChange={handleChange}
+                  className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#ff0055]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[9px] font-bold text-white/40 uppercase">
+                    <span>X Offset</span>
+                    <span>{playerData.photoX.toFixed(0)}px</span>
+                  </div>
+                  <input 
+                    type="range" name="photoX" min="-200" max="200" step="1"
+                    value={playerData.photoX} onChange={handleChange}
+                    className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#00f0ff]"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[9px] font-bold text-white/40 uppercase">
+                    <span>Y Offset</span>
+                    <span>{playerData.photoY.toFixed(0)}px</span>
+                  </div>
+                  <input 
+                    type="range" name="photoY" min="-200" max="200" step="1"
+                    value={playerData.photoY} onChange={handleChange}
+                    className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#00f0ff]"
+                  />
+                </div>
               </div>
             </div>
 
