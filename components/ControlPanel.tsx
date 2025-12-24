@@ -26,7 +26,18 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const val = type === 'number' ? parseFloat(value) : value;
-    setPlayerData(prev => ({ ...prev, [name]: val }));
+    
+    setPlayerData(prev => {
+      const next = { ...prev, [name]: val };
+      // If photo URL is changed via link, sync background for that cinematic look
+      if (name === 'photoUrl' && value) {
+        next.customBgUrl = value as string;
+        next.backgroundMode = 'custom';
+        next.customBgBlur = 10; // Default blur for background version
+        next.customBgOpacity = 0.5; // Good default dimming
+      }
+      return next;
+    });
   };
 
   const handleCountrySelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -48,7 +59,18 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       reader.onloadend = () => {
         const result = reader.result as string;
         if (field === 'photoUrl') {
-          setPlayerData(prev => ({ ...prev, photoUrl: result, photoZoom: 1, photoX: 0, photoY: 0 }));
+          setPlayerData(prev => ({ 
+            ...prev, 
+            photoUrl: result, 
+            photoZoom: 1, 
+            photoX: 0, 
+            photoY: 0,
+            // Sync to background automatically
+            customBgUrl: result,
+            backgroundMode: 'custom',
+            customBgBlur: 10,
+            customBgOpacity: 0.5
+          }));
           setCroppingImage(result);
         } else if (field === 'clubLogoUrl') {
           setPlayerData(prev => ({ ...prev, clubLogoUrl: result }));
@@ -99,6 +121,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                   className="w-full bg-transparent border-0 text-sm text-white focus:outline-none appearance-none"
                   value={COUNTRIES.find(c => c.name === playerData.nationality)?.code || ""}
                 >
+                  <option value="" disabled className="bg-[#2b003e]">Select Nation</option>
                   {COUNTRIES.map(c => <option key={c.code} value={c.code} className="bg-[#2b003e]">{c.name}</option>)}
                 </select>
               </div>
@@ -117,7 +140,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           </div>
         </section>
 
-        {/* Section: Player Photo with Tabs */}
+        {/* Section: Player Photo */}
         <section>
           <div className="flex items-center gap-2 mb-4 text-[#00f0ff] font-bold text-xs uppercase tracking-widest">
             <User size={14} /> Player Photo
@@ -162,7 +185,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           </div>
         </section>
 
-        {/* Section: Background Filters */}
+        {/* Section: Background Style */}
         <section>
           <div className="flex items-center gap-2 mb-4 text-[#00f0ff] font-bold text-xs uppercase tracking-widest">
             <Layout size={14} /> Background Style
@@ -184,60 +207,160 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               ))}
             </div>
 
-            {playerData.backgroundMode === 'custom' && (
-              <div className="space-y-4 pt-2 border-t border-white/5">
-                <div className="space-y-3">
-                  <label className="block text-[10px] text-white/40 font-bold uppercase ml-1">Background Image</label>
-                  <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-white/10 border-dashed rounded-xl cursor-pointer bg-white/5 hover:bg-white/10 transition-colors">
-                    <ImageIcon size={20} className="text-white/30 mb-1" />
-                    <p className="text-[9px] text-white/40 font-bold uppercase">Change Image</p>
-                    <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, 'customBgUrl')} accept="image/*" />
+            {playerData.backgroundMode === 'blur' && (
+              <div className="space-y-3 pt-2">
+                <div>
+                  <label className="flex justify-between text-[8px] text-white/40 font-bold uppercase mb-1">
+                    <span>Blur Intensity</span>
+                    <span>{playerData.blurIntensity}px</span>
                   </label>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex justify-between text-[10px] font-bold text-white/40 uppercase">
-                    <span>Blur Level</span>
-                    <span>{playerData.customBgBlur}px</span>
-                  </div>
-                  <input 
-                    type="range" name="customBgBlur" min="0" max="20" step="1"
-                    value={playerData.customBgBlur} onChange={handleChange}
-                    className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#00f0ff]"
+                  <input
+                    type="range"
+                    name="blurIntensity"
+                    min="0"
+                    max="100"
+                    value={playerData.blurIntensity}
+                    onChange={handleChange}
+                    className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#00f0ff]"
                   />
                 </div>
-
-                <div className="space-y-3">
-                  <div className="flex justify-between text-[10px] font-bold text-white/40 uppercase">
-                    <span>Dimming Overlay</span>
-                    <span>{(playerData.customBgOpacity * 100).toFixed(0)}%</span>
-                  </div>
-                  <input 
-                    type="range" name="customBgOpacity" min="0" max="0.9" step="0.05"
-                    value={playerData.customBgOpacity} onChange={handleChange}
-                    className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#ff0055]"
+                <div>
+                  <label className="flex justify-between text-[8px] text-white/40 font-bold uppercase mb-1">
+                    <span>Logo Opacity</span>
+                    <span>{(playerData.bgOpacity * 100).toFixed(0)}%</span>
+                  </label>
+                  <input
+                    type="range"
+                    name="bgOpacity"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={playerData.bgOpacity}
+                    onChange={handleChange}
+                    className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#00f0ff]"
                   />
+                </div>
+              </div>
+            )}
+
+            {playerData.backgroundMode === 'custom' && (
+              <div className="space-y-3 pt-2">
+                <label className="flex flex-col items-center justify-center w-full h-16 border border-white/10 border-dashed rounded-lg cursor-pointer bg-white/5 hover:bg-white/10 transition-colors">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon size={14} className="text-white/30" />
+                    <span className="text-[9px] text-white/40 font-bold uppercase">Background Image</span>
+                  </div>
+                  <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, 'customBgUrl')} accept="image/*" />
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[8px] text-white/40 font-bold uppercase mb-1">Blur</label>
+                    <input
+                      type="range"
+                      name="customBgBlur"
+                      min="0"
+                      max="40"
+                      value={playerData.customBgBlur}
+                      onChange={handleChange}
+                      className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#00f0ff]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[8px] text-white/40 font-bold uppercase mb-1">Dim</label>
+                    <input
+                      type="range"
+                      name="customBgOpacity"
+                      min="0"
+                      max="1"
+                      step="0.05"
+                      value={playerData.customBgOpacity}
+                      onChange={handleChange}
+                      className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#00f0ff]"
+                    />
+                  </div>
                 </div>
               </div>
             )}
           </div>
         </section>
 
-        {/* Footer Actions */}
-        <div className="pt-4 flex flex-col gap-3">
-           <button
-             onClick={handleDownload}
-             disabled={isDownloading}
-             className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#ff0055] to-[#e6004c] hover:opacity-90 py-4 rounded-xl transition-all font-black text-sm uppercase tracking-widest text-white shadow-lg shadow-pink-500/20 disabled:opacity-50"
-           >
-             {isDownloading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" /> : <><Download size={18} /> Download HQ PNG</>}
-           </button>
-           <button
-             onClick={handleRandomize}
-             className="w-full py-3 text-[10px] font-black text-white/40 hover:text-white uppercase tracking-[0.3em] transition-colors"
-           >
-             Randomize Mock Data
-           </button>
+        {/* Section: Colors */}
+        <section>
+          <div className="flex items-center gap-2 mb-4 text-[#00f0ff] font-bold text-xs uppercase tracking-widest">
+            <Palette size={14} /> Color Palette
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white/5 p-3 rounded-xl border border-white/10">
+              <label className="block text-[10px] text-white/40 font-bold uppercase mb-2 ml-1">Primary</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  name="primaryColor"
+                  value={playerData.primaryColor}
+                  onChange={handleChange}
+                  className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0"
+                />
+                <span className="text-[10px] text-white/60 font-mono uppercase">{playerData.primaryColor}</span>
+              </div>
+            </div>
+            <div className="bg-white/5 p-3 rounded-xl border border-white/10">
+              <label className="block text-[10px] text-white/40 font-bold uppercase mb-2 ml-1">Secondary</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="color"
+                  name="secondaryColor"
+                  value={playerData.secondaryColor}
+                  onChange={handleChange}
+                  className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0"
+                />
+                <span className="text-[10px] text-white/60 font-mono uppercase">{playerData.secondaryColor}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section: Club Logo */}
+        <section>
+          <div className="flex items-center gap-2 mb-4 text-[#00f0ff] font-bold text-xs uppercase tracking-widest">
+            <Shield size={14} /> Club Logo
+          </div>
+          <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+            <label className="flex flex-col items-center justify-center w-full h-20 border border-white/10 border-dashed rounded-lg cursor-pointer bg-white/5 hover:bg-white/10 transition-colors">
+              <Upload size={18} className="text-white/30 mb-1" />
+              <p className="text-[9px] text-white/40 font-bold uppercase">Upload Club Crest</p>
+              <input type="file" className="hidden" onChange={(e) => handleFileUpload(e, 'clubLogoUrl')} accept="image/*" />
+            </label>
+          </div>
+        </section>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col gap-3 pt-4">
+          <button
+            onClick={handleRandomize}
+            className="flex items-center justify-center gap-3 w-full bg-white/5 border border-white/10 hover:bg-white/10 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all active:scale-95"
+          >
+            <Shuffle size={18} className="text-[#00f0ff]" />
+            Randomize Player
+          </button>
+          
+          <button
+            onClick={handleDownload}
+            disabled={isDownloading}
+            className={`flex items-center justify-center gap-3 w-full py-5 rounded-2xl font-black text-sm uppercase tracking-[0.3em] transition-all shadow-xl active:scale-95 ${
+              isDownloading 
+                ? 'bg-white/5 text-white/20 cursor-not-allowed' 
+                : 'bg-gradient-to-r from-[#ff0055] to-[#e6004c] text-white shadow-pink-500/20'
+            }`}
+          >
+            {isDownloading ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <>
+                <Download size={20} />
+                Export Card
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>

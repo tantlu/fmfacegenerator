@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useCallback } from 'react';
 import { toPng } from 'html-to-image';
 import saveAs from 'file-saver';
@@ -33,21 +32,27 @@ const App: React.FC = () => {
     
     try {
       setIsDownloading(true);
-      // Extra delay to ensure all assets (logo/photo) are fully rendered in the DOM
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Wait for all rendering to settle
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       const dataUrl = await toPng(cardRef.current, {
         pixelRatio: exportScale,
-        width: 260,
-        height: 310,
         cacheBust: true,
+        // Filter out any problematic elements if they existed
+        filter: (node) => {
+          if (node.tagName === 'IFRAME') return false;
+          return true;
+        },
+        // Ensure fonts are embedded
+        fontEmbedCSS: undefined, // Let it try to find them automatically with the link fix
       });
       
       const fileName = `${playerData.name.toLowerCase().replace(/\s+/g, '-')}-card.png`;
       saveAs(dataUrl, fileName);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Download error:', error);
-      alert('Export failed. Try reducing the quality scale or check if the images allow cross-origin access.');
+      const msg = error instanceof Error ? error.message : String(error);
+      alert(`Export failed: ${msg}. Try using a lower export quality or use direct image links that support CORS.`);
     } finally {
       setIsDownloading(false);
     }

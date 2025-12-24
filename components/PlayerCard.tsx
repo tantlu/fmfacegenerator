@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { PlayerData } from '../types';
 import { Shield, MapPin, User, Trophy, Zap, Crop } from 'lucide-react';
@@ -42,6 +41,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
           >
             <img 
               src={playerData.clubLogoUrl} 
+              crossOrigin="anonymous"
               className="w-full h-full object-cover scale-[1.8]"
               style={{ filter: `blur(${playerData.blurIntensity}px) saturate(1.5)` }}
               alt=""
@@ -54,6 +54,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
           <div className="absolute inset-0 overflow-hidden">
             <img 
               src={playerData.customBgUrl} 
+              crossOrigin="anonymous"
               className="w-full h-full object-cover scale-110"
               style={{ 
                 filter: `blur(${playerData.customBgBlur}px)`,
@@ -89,14 +90,14 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
         <div className="w-full flex justify-between items-start mb-1">
           <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 p-1.5 flex items-center justify-center overflow-hidden shadow-lg transition-transform group-hover/card:scale-110">
             {playerData.clubLogoUrl ? (
-              <img src={playerData.clubLogoUrl} alt="Club" className="w-full h-full object-contain" />
+              <img src={playerData.clubLogoUrl} crossOrigin="anonymous" alt="Club" className="w-full h-full object-contain" />
             ) : (
               <Shield size={20} className="text-white/30" />
             )}
           </div>
           <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 p-1.5 flex items-center justify-center overflow-hidden shadow-lg transition-transform group-hover/card:scale-110">
             {playerData.nationFlagUrl ? (
-              <img src={playerData.nationFlagUrl} alt="Nation" className="w-full h-full object-contain" />
+              <img src={playerData.nationFlagUrl} crossOrigin="anonymous" alt="Nation" className="w-full h-full object-contain" />
             ) : (
               <Trophy size={20} className="text-white/30" />
             )}
@@ -108,12 +109,15 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
           className="relative w-56 h-56 cursor-pointer group/photo -mt-1"
           onClick={onPhotoClick}
         >
-          <div className="absolute inset-0 bg-[#00f0ff]/10 rounded-full blur-3xl scale-110 opacity-30 group-hover/card:opacity-60 transition-all duration-500" />
+          {/* Enhanced Halo Glow background */}
+          <div className="absolute inset-0 bg-[#00f0ff]/20 rounded-full blur-3xl scale-110 opacity-40 group-hover/card:opacity-70 transition-all duration-500" />
           
-          <div className="relative w-full h-full rounded-full border-[4px] border-white/40 p-1.5 bg-black/10 backdrop-blur-sm overflow-hidden shadow-[0_0_20px_rgba(0,240,255,0.2)] group-hover/card:shadow-[0_0_40px_rgba(0,240,255,0.5)] group-hover/card:border-[#00f0ff]/60 transition-all duration-300 flex items-center justify-center">
+          {/* Photo Container with Teal Glowing Border */}
+          <div className="relative w-full h-full rounded-full border-[5px] border-[#00f0ff]/70 p-1.5 bg-black/20 backdrop-blur-sm overflow-hidden shadow-[0_0_25px_rgba(0,240,255,0.4)] group-hover/card:shadow-[0_0_50px_rgba(0,240,255,0.8)] group-hover/card:border-[#00f0ff] transition-all duration-300 flex items-center justify-center">
             {playerData.photoUrl ? (
               <img 
                 src={playerData.photoUrl} 
+                crossOrigin="anonymous"
                 alt={playerData.name} 
                 style={photoStyle}
               />
@@ -125,11 +129,11 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
             
             <div className="absolute inset-0 pointer-events-none opacity-0 group-hover/photo:opacity-100 transition-opacity duration-300">
                <div className="absolute inset-0 flex items-center justify-center">
-                 <div className="w-px h-full bg-[#00f0ff]/30" />
-                 <div className="h-px w-full bg-[#00f0ff]/30" />
+                 <div className="w-px h-full bg-[#00f0ff]/40" />
+                 <div className="h-px w-full bg-[#00f0ff]/40" />
                </div>
                <div className="absolute inset-0 flex items-center justify-center">
-                 <div className="w-32 h-32 rounded-full border border-[#00f0ff]/20 border-dashed" />
+                 <div className="w-32 h-32 rounded-full border border-[#00f0ff]/30 border-dashed" />
                </div>
             </div>
 
