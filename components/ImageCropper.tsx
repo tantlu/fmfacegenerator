@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import Cropper, { Area } from 'react-easy-crop';
 import { X, Check, ZoomIn } from 'lucide-react';
 
@@ -12,7 +12,7 @@ interface ImageCropperProps {
 const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCropComplete, onCancel }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const onCropChange = useCallback((crop: { x: number; y: number }) => {
     setCrop(crop);
@@ -22,23 +22,30 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCropComplete, onCa
     setZoom(zoom);
   }, []);
 
-  const onCropAreaComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
-    setCroppedAreaPixels(croppedAreaPixels);
-  }, []);
-
   const handleConfirm = () => {
-    // Return the crop values directly. 
-    // react-easy-crop 'crop' is in percent of the image.
+    /**
+     * NORMALIZATION LOGIC
+     * To make the crop consistent across devices, we normalize the pixel offsets
+     * relative to our fixed target size in PlayerCard (224px).
+     */
+    const cropperContainer = containerRef.current?.querySelector('.react-easy-crop_Container');
+    const cropperWidth = cropperContainer?.clientWidth || 1;
+    const TARGET_SIZE = 224; 
+    const scaleFactor = TARGET_SIZE / cropperWidth;
+
     onCropComplete({
       zoom: zoom,
-      x: crop.x,
-      y: crop.y
+      x: crop.x * scaleFactor,
+      y: crop.y * scaleFactor
     });
   };
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-[#0d0012]/95 backdrop-blur-xl items-center justify-center p-4">
-      <div className="relative w-full max-w-lg aspect-square bg-[#1a0025] rounded-3xl border border-white/10 overflow-hidden shadow-2xl">
+      <div 
+        ref={containerRef}
+        className="relative w-full max-w-lg aspect-square bg-[#1a0025] rounded-3xl border border-white/10 overflow-hidden shadow-2xl"
+      >
         <Cropper
           image={image}
           crop={crop}
@@ -47,7 +54,6 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCropComplete, onCa
           cropShape="round"
           showGrid={false}
           onCropChange={onCropChange}
-          onCropComplete={onCropAreaComplete}
           onZoomChange={onZoomChange}
         />
       </div>

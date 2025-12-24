@@ -15,18 +15,18 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
   };
 
   /**
-   * Refined Zoom Logic:
-   * react-easy-crop's 'crop' state values (photoX, photoY) are percentages.
-   * Applying translate(X%, Y%) then scale(Z) ensures the image is positioned 
-   * exactly as seen in the cropper relative to its container.
+   * Refined Positioning Logic:
+   * playerData.photoX and playerData.photoY are pixel offsets relative to a 224px container.
+   * This ensures the zoom and position look identical to the cropper regardless of the screen size
+   * at the time of cropping.
    */
   const photoStyle: React.CSSProperties = {
-    transform: `translate(${-playerData.photoX}%, ${-playerData.photoY}%) scale(${playerData.photoZoom})`,
+    transform: `translate(${playerData.photoX}px, ${playerData.photoY}px) scale(${playerData.photoZoom})`,
     transformOrigin: 'center center',
     width: '100%',
     height: '100%',
     objectFit: 'cover',
-    transition: 'transform 0.2s ease-out', // Smooth transition for UI changes
+    transition: 'transform 0.1s ease-out',
   };
 
   return (
@@ -36,55 +36,55 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
       style={{ width: '260px', height: '310px', ...cardBackgroundStyle }}
       className="relative overflow-hidden rounded-2xl border border-white/20 shadow-2xl flex flex-col"
     >
-      {/* Background Blurred Logo Effect */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
+      {/* Subtle Background Blurred Logo Effect */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         {playerData.clubLogoUrl ? (
           <img 
-            src={String(playerData.clubLogoUrl)} 
-            className="w-full h-full object-cover blur-3xl scale-150"
+            src={playerData.clubLogoUrl} 
+            className="w-full h-full object-cover blur-[40px] opacity-20 scale-150"
             alt=""
           />
         ) : (
-          <div className="w-full h-full bg-black/20 blur-3xl" />
+          <div className="w-full h-full bg-black/10 blur-3xl" />
         )}
       </div>
 
-      {/* Dynamic Overlay for depth */}
-      <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+      {/* Main card content overlay */}
+      <div className="absolute inset-0 bg-black/10 pointer-events-none z-[1]" />
       
       {/* Card Content */}
       <div className="relative z-10 p-4 h-full flex flex-col items-center">
-        {/* Header: Club & Nation Logos (Stay at the top) */}
+        {/* Header: Club & Nation Logos */}
         <div className="w-full flex justify-between items-start mb-1">
-          <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 p-1.5 flex items-center justify-center overflow-hidden shadow-lg">
+          <div className="w-10 h-10 bg-white/15 backdrop-blur-md rounded-lg border border-white/20 p-1.5 flex items-center justify-center overflow-hidden shadow-lg">
             {playerData.clubLogoUrl ? (
-              <img src={String(playerData.clubLogoUrl)} alt="Club" className="w-full h-full object-contain" />
+              <img src={playerData.clubLogoUrl} alt="Club" className="w-full h-full object-contain" />
             ) : (
               <Shield size={20} className="text-white/30" />
             )}
           </div>
-          <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 p-1.5 flex items-center justify-center overflow-hidden shadow-lg">
+          <div className="w-10 h-10 bg-white/15 backdrop-blur-md rounded-lg border border-white/20 p-1.5 flex items-center justify-center overflow-hidden shadow-lg">
             {playerData.nationFlagUrl ? (
-              <img src={String(playerData.nationFlagUrl)} alt="Nation" className="w-full h-full object-contain" />
+              <img src={playerData.nationFlagUrl} alt="Nation" className="w-full h-full object-contain" />
             ) : (
               <Trophy size={20} className="text-white/30" />
             )}
           </div>
         </div>
 
-        {/* Central Player Image Area - Maximized size */}
+        {/* Central Player Image Area - Clickable for re-cropping */}
         <div 
           className="relative w-56 h-56 cursor-pointer group/photo -mt-1"
           onClick={onPhotoClick}
         >
-          {/* Halo Glow */}
-          <div className="absolute inset-0 bg-white/20 rounded-full blur-3xl scale-110 opacity-30" />
+          {/* Halo Glow behind the player */}
+          <div className="absolute inset-0 bg-white/20 rounded-full blur-3xl scale-110 opacity-40" />
           
           <div className="relative w-full h-full rounded-full border-[4px] border-white/40 p-1.5 bg-black/10 backdrop-blur-sm overflow-hidden shadow-[0_0_40px_rgba(255,255,255,0.2)] flex items-center justify-center">
             {playerData.photoUrl ? (
               <img 
-                src={String(playerData.photoUrl)} 
-                alt={String(playerData.name)} 
+                src={playerData.photoUrl} 
+                alt={playerData.name} 
                 style={photoStyle}
               />
             ) : (
@@ -93,26 +93,26 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
               </div>
             )}
             
-            {/* Click to adjust overlay */}
+            {/* Hover Indicator */}
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/photo:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
               <Crop size={32} className="text-white" />
-              <span className="text-[10px] font-bold text-white uppercase tracking-widest">Zoom Face</span>
+              <span className="text-[10px] font-bold text-white uppercase tracking-widest">Adjust View</span>
             </div>
           </div>
           
           {/* Position Badge Overlay */}
           <div className="absolute bottom-4 right-4 bg-[#ff0055] text-white font-black px-3 py-1 rounded-md border border-white/40 text-[12px] shadow-2xl uppercase z-20 transform translate-x-2 translate-y-2">
-            {String(playerData.position || '??')}
+            {playerData.position || '??'}
           </div>
         </div>
 
-        {/* Player Identity Section - Name and Nationality only */}
+        {/* Player Identity Section */}
         <div className="text-center w-full mt-auto mb-1">
           <h2 className="text-2xl font-black tracking-tighter text-white uppercase drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] leading-none truncate px-2 mb-1">
-            {String(playerData.name || "UNNAMED")}
+            {playerData.name || "UNNAMED"}
           </h2>
           <div className="flex items-center justify-center gap-1 text-[10px] font-bold text-[#00f0ff] uppercase tracking-[0.3em] drop-shadow-md">
-            <MapPin size={10} className="opacity-70" /> {String(playerData.nationality || "UNKNOWN")}
+            <MapPin size={10} className="opacity-70" /> {playerData.nationality || "UNKNOWN"}
           </div>
         </div>
 
@@ -120,7 +120,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
         <div className="w-full pt-1.5 border-t border-white/10 flex justify-between items-center text-[6px] text-white/30 uppercase font-bold tracking-[0.4em]">
           <div className="flex items-center gap-1">
             <Zap size={6} className="text-[#ff0055]" />
-            <span>HQ FACE</span>
+            <span>Face ID Pro</span>
           </div>
           <span>FM24 GEN</span>
         </div>
