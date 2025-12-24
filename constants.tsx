@@ -2,13 +2,14 @@
 import { PlayerData } from './types';
 
 export const INITIAL_PLAYER_DATA: PlayerData = {
+  id: 'initial-player',
   name: "ERLING HAALAND",
   club: "Manchester City",
   nationality: "Norway",
   position: "ST",
   age: 23,
   photoUrl: "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=800&q=80",
-  photoZoom: 1,
+  photoZoom: 1.15,
   photoX: 0,
   photoY: 0,
   clubLogoUrl: "https://upload.wikimedia.org/wikipedia/en/thumb/e/eb/Manchester_City_FC_badge.svg/200px-Manchester_City_FC_badge.svg.png",
@@ -21,6 +22,14 @@ export const INITIAL_PLAYER_DATA: PlayerData = {
   customBgOpacity: 0.4,
   blurIntensity: 40,
   bgOpacity: 0.2,
+  showName: true,
+  showPosition: true,
+  showFlag: true,
+  cardTheme: 'pro',
+  faceMask: 'circle',
+  footerLeft: "FM PRO GEN",
+  footerRight: "FM24 EDITION",
+  originalFilename: "initial-haaland",
 };
 
 export const POSITIONS = [

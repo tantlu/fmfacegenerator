@@ -1,5 +1,6 @@
 
 export interface PlayerData {
+  id: string;
   name: string;
   club: string;
   nationality: string;
@@ -19,4 +20,12 @@ export interface PlayerData {
   customBgOpacity: number;
   blurIntensity: number;
   bgOpacity: number;
+  showName: boolean;
+  showPosition: boolean;
+  showFlag: boolean;
+  cardTheme: 'pro' | 'cyber' | 'luxury' | 'stealth' | 'retro' | 'vivid' | 'magma' | 'glacial' | 'emerald' | 'sunset' | 'phantom' | 'royal' | 'mecha' | 'vintage' | 'hologram' | 'aurora' | 'noir' | 'arcade' | 'blueprint' | 'prism' | 'terminal' | 'sticker';
+  faceMask: 'circle' | 'square' | 'squircle' | 'shield' | 'hexagon' | 'diamond' | 'octagon' | 'star' | 'badge' | 'pentagon';
+  footerLeft: string;
+  footerRight: string;
+  originalFilename: string;
 }
