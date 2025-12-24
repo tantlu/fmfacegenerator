@@ -13,4 +13,7 @@ export interface PlayerData {
   nationFlagUrl: string;
   primaryColor: string;
   secondaryColor: string;
+  backgroundMode: 'blur' | 'gradient' | 'mesh';
+  blurIntensity: number;
+  bgOpacity: number;
 }

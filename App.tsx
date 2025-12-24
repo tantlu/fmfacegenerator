@@ -13,12 +13,13 @@ const App: React.FC = () => {
   const [playerData, setPlayerData] = useState<PlayerData>(INITIAL_PLAYER_DATA);
   const [isDownloading, setIsDownloading] = useState(false);
   const [croppingImage, setCroppingImage] = useState<string | null>(null);
-  const [exportScale, setExportScale] = useState<number>(2); // Default 2x (High Quality)
+  const [exportScale, setExportScale] = useState<number>(2);
   const cardRef = useRef<HTMLDivElement>(null);
 
   const handleRandomize = useCallback(() => {
     setPlayerData(prev => ({
       ...prev,
+      name: "RANDOM PRO " + Math.floor(Math.random() * 99),
       age: Math.floor(Math.random() * 20) + 16,
       position: POSITIONS[Math.floor(Math.random() * POSITIONS.length)],
       photoZoom: 1,
@@ -32,28 +33,21 @@ const App: React.FC = () => {
     
     try {
       setIsDownloading(true);
-      // Wait for rendering stability
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const width = 260;
-      const height = 310;
+      // Extra delay to ensure all assets (logo/photo) are fully rendered in the DOM
+      await new Promise(resolve => setTimeout(resolve, 800));
       
       const dataUrl = await toPng(cardRef.current, {
         pixelRatio: exportScale,
-        width: width,
-        height: height,
-        style: {
-          transform: 'scale(1)',
-          transformOrigin: 'top left'
-        },
+        width: 260,
+        height: 310,
         cacheBust: true,
       });
       
-      const fileName = String(playerData.name || 'player').toLowerCase().replace(/\s+/g, '-');
-      saveAs(dataUrl, `${fileName}-face-card.png`);
+      const fileName = `${playerData.name.toLowerCase().replace(/\s+/g, '-')}-card.png`;
+      saveAs(dataUrl, fileName);
     } catch (error) {
       console.error('Download error:', error);
-      alert('Failed to generate image. Try a lower resolution.');
+      alert('Export failed. Try reducing the quality scale or check if the images allow cross-origin access.');
     } finally {
       setIsDownloading(false);
     }
@@ -70,7 +64,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen w-full bg-[#1a0025] overflow-hidden">
+    <div className="flex flex-col lg:flex-row h-screen w-full bg-[#1a0025] overflow-hidden text-white">
       {croppingImage && (
         <ImageCropper 
           image={croppingImage} 
@@ -79,8 +73,7 @@ const App: React.FC = () => {
         />
       )}
 
-      {/* Sidebar Controls */}
-      <aside className="w-full lg:w-[30%] lg:min-w-[350px] lg:max-w-[450px] h-full flex-shrink-0">
+      <aside className="w-full lg:w-[30%] lg:min-w-[380px] lg:max-w-[420px] h-full flex-shrink-0 z-50">
         <ControlPanel 
           playerData={playerData}
           setPlayerData={setPlayerData}
@@ -91,13 +84,12 @@ const App: React.FC = () => {
         />
       </aside>
 
-      {/* Main Preview Area */}
-      <main className="flex-1 h-full bg-[#0d0012] relative overflow-auto flex flex-col items-center justify-center p-8 lg:p-12">
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-             style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+      <main className="flex-1 h-full bg-[#0d0012] relative overflow-hidden flex flex-col items-center justify-center p-8">
+        {/* Dynamic Background Pattern */}
+        <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
+             style={{ backgroundImage: 'radial-gradient(circle, #ff0055 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
         
-        {/* Export Settings Bar */}
-        <div className="mb-8 flex flex-col items-center gap-4 z-20">
+        <div className="mb-10 flex flex-col items-center gap-4 z-20">
           <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-2xl backdrop-blur-xl">
              <Settings2 size={14} className="text-[#00f0ff]" />
              <span className="text-[10px] font-black text-white/40 uppercase tracking-widest mr-2">Export Quality:</span>
@@ -108,7 +100,7 @@ const App: React.FC = () => {
                    onClick={() => setExportScale(scale)}
                    className={`px-3 py-1 rounded-lg text-[10px] font-black transition-all ${
                      exportScale === scale 
-                       ? 'bg-[#ff0055] text-white shadow-lg shadow-pink-500/20' 
+                       ? 'bg-[#ff0055] text-white shadow-lg' 
                        : 'text-white/30 hover:text-white/60 bg-white/5'
                    }`}
                  >
@@ -117,30 +109,25 @@ const App: React.FC = () => {
                ))}
              </div>
           </div>
-          <p className="text-[9px] text-white/20 uppercase font-bold tracking-[0.2em]">
-            Current: {260 * exportScale} x {310 * exportScale} px
-          </p>
         </div>
 
-        <div className="relative group transition-transform duration-500 hover:scale-[1.05]">
-           <div className="absolute -inset-8 bg-gradient-to-tr from-[#ff0055]/10 to-[#00f0ff]/10 blur-3xl opacity-50 pointer-events-none" />
+        <div className="relative group transition-transform duration-700 hover:scale-[1.02]">
+           {/* Decorative Glow */}
+           <div className="absolute -inset-20 bg-gradient-to-tr from-[#ff0055]/20 to-[#00f0ff]/20 blur-[120px] opacity-40 pointer-events-none" />
            
            <PlayerCard 
              playerData={playerData} 
              cardRef={cardRef} 
-             onPhotoClick={() => playerData.photoUrl && setCroppingImage(String(playerData.photoUrl))}
+             onPhotoClick={() => playerData.photoUrl && setCroppingImage(playerData.photoUrl)}
            />
            
-           <div className="absolute -top-2 -left-2 w-6 h-6 border-t-2 border-l-2 border-white/20 rounded-tl-lg" />
-           <div className="absolute -bottom-2 -right-2 w-6 h-6 border-b-2 border-r-2 border-white/20 rounded-br-lg" />
+           {/* Card Frame Guides */}
+           <div className="absolute -top-3 -left-3 w-8 h-8 border-t-2 border-l-2 border-white/10 rounded-tl-xl" />
+           <div className="absolute -bottom-3 -right-3 w-8 h-8 border-b-2 border-r-2 border-white/10 rounded-br-xl" />
         </div>
 
-        <div className="mt-12 px-6 py-2 bg-white/5 border border-white/10 rounded-full backdrop-blur-md flex items-center gap-3">
-           <div className="flex gap-1">
-             <div className="w-2 h-2 rounded-full bg-[#ff0055]" />
-             <div className="w-2 h-2 rounded-full bg-white/20" />
-           </div>
-           <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Face ID Export Mode</span>
+        <div className="mt-16 text-center opacity-30 select-none">
+          <p className="text-[10px] font-black uppercase tracking-[0.6em]">FM24 Pro Visualizer</p>
         </div>
       </main>
     </div>
