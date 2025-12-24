@@ -28,13 +28,13 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
       style={{ 
         width: '260px', 
         height: '310px', 
-        background: baseGradient 
+        background: playerData.backgroundMode === 'custom' && playerData.customBgUrl ? 'black' : baseGradient 
       }}
       className="relative overflow-hidden rounded-2xl border border-white/20 shadow-2xl flex flex-col group/card"
     >
       {/* Refined Dynamic Background Layers */}
       <div className="absolute inset-0 pointer-events-none z-0">
-        {/* Layer 1: The "Ghost" Logo Blur - Applied to entire card */}
+        {/* Layer 1: The "Ghost" Logo Blur */}
         {playerData.backgroundMode === 'blur' && playerData.clubLogoUrl && (
           <div 
             className="absolute inset-0 transition-opacity duration-700 mix-blend-soft-light"
@@ -45,6 +45,25 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
               className="w-full h-full object-cover scale-[1.8]"
               style={{ filter: `blur(${playerData.blurIntensity}px) saturate(1.5)` }}
               alt=""
+            />
+          </div>
+        )}
+
+        {/* Custom Background Image Layer with Filters */}
+        {playerData.backgroundMode === 'custom' && playerData.customBgUrl && (
+          <div className="absolute inset-0 overflow-hidden">
+            <img 
+              src={playerData.customBgUrl} 
+              className="w-full h-full object-cover scale-110"
+              style={{ 
+                filter: `blur(${playerData.customBgBlur}px)`,
+              }}
+              alt=""
+            />
+            {/* Dark Overlay Scrim for readability */}
+            <div 
+              className="absolute inset-0 bg-black transition-opacity duration-300" 
+              style={{ opacity: playerData.customBgOpacity }}
             />
           </div>
         )}
@@ -61,12 +80,12 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
              style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/carbon-fibre.png")' }} />
       </div>
 
-      {/* Content Scrim - Darkens the bottom slightly for text readability */}
+      {/* Content Scrim */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/0 to-black/40 pointer-events-none z-[1]" />
       
       {/* Card Content */}
       <div className="relative z-10 p-4 h-full flex flex-col items-center">
-        {/* Header: Club & Nation Logos */}
+        {/* Header */}
         <div className="w-full flex justify-between items-start mb-1">
           <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 p-1.5 flex items-center justify-center overflow-hidden shadow-lg transition-transform group-hover/card:scale-110">
             {playerData.clubLogoUrl ? (
@@ -89,8 +108,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
           className="relative w-56 h-56 cursor-pointer group/photo -mt-1"
           onClick={onPhotoClick}
         >
-          {/* Dynamic Halo Glow */}
-          <div className="absolute inset-0 bg-[#00f0ff]/10 rounded-full blur-3xl scale-110 opacity-30 group-hover/card:opacity-60 group-hover/card:scale-125 transition-all duration-500" />
+          <div className="absolute inset-0 bg-[#00f0ff]/10 rounded-full blur-3xl scale-110 opacity-30 group-hover/card:opacity-60 transition-all duration-500" />
           
           <div className="relative w-full h-full rounded-full border-[4px] border-white/40 p-1.5 bg-black/10 backdrop-blur-sm overflow-hidden shadow-[0_0_20px_rgba(0,240,255,0.2)] group-hover/card:shadow-[0_0_40px_rgba(0,240,255,0.5)] group-hover/card:border-[#00f0ff]/60 transition-all duration-300 flex items-center justify-center">
             {playerData.photoUrl ? (
@@ -105,7 +123,6 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
               </div>
             )}
             
-            {/* Alignment Guides Focus Area */}
             <div className="absolute inset-0 pointer-events-none opacity-0 group-hover/photo:opacity-100 transition-opacity duration-300">
                <div className="absolute inset-0 flex items-center justify-center">
                  <div className="w-px h-full bg-[#00f0ff]/30" />
@@ -116,14 +133,12 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
                </div>
             </div>
 
-            {/* Hover UI Action Overlay */}
             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/photo:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
               <Crop size={32} className="text-[#00f0ff]" />
               <span className="text-[10px] font-bold text-white uppercase tracking-widest">Adjust View</span>
             </div>
           </div>
           
-          {/* Position Badge Overlay */}
           <div className="absolute bottom-4 right-4 bg-[#ff0055] text-white font-black px-3 py-1 rounded-md border border-white/40 text-[12px] shadow-2xl uppercase z-20 transform translate-x-2 translate-y-2 group-hover/card:scale-110 transition-transform">
             {playerData.position || '??'}
           </div>

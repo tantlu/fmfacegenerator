@@ -13,7 +13,10 @@ export interface PlayerData {
   nationFlagUrl: string;
   primaryColor: string;
   secondaryColor: string;
-  backgroundMode: 'blur' | 'gradient' | 'mesh';
+  backgroundMode: 'blur' | 'gradient' | 'mesh' | 'custom';
+  customBgUrl: string;
+  customBgBlur: number;
+  customBgOpacity: number;
   blurIntensity: number;
   bgOpacity: number;
 }

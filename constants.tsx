@@ -16,6 +16,9 @@ export const INITIAL_PLAYER_DATA: PlayerData = {
   primaryColor: "#6CADDF",
   secondaryColor: "#1C2C5B",
   backgroundMode: 'blur',
+  customBgUrl: "",
+  customBgBlur: 0,
+  customBgOpacity: 0.4,
   blurIntensity: 40,
   bgOpacity: 0.2,
 };
