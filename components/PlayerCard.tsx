@@ -14,13 +14,19 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
     background: `linear-gradient(135deg, ${playerData.secondaryColor || '#1C2C5B'} 0%, ${playerData.primaryColor || '#6CADDF'} 100%)`,
   };
 
-  // Calculate CSS for the "zoomed" photo
+  /**
+   * Refined Zoom Logic:
+   * react-easy-crop's 'crop' state values (photoX, photoY) are percentages.
+   * Applying translate(X%, Y%) then scale(Z) ensures the image is positioned 
+   * exactly as seen in the cropper relative to its container.
+   */
   const photoStyle: React.CSSProperties = {
-    transform: `scale(${playerData.photoZoom}) translate(${playerData.photoX}px, ${playerData.photoY}px)`,
+    transform: `translate(${-playerData.photoX}%, ${-playerData.photoY}%) scale(${playerData.photoZoom})`,
     transformOrigin: 'center center',
     width: '100%',
     height: '100%',
-    objectFit: 'cover'
+    objectFit: 'cover',
+    transition: 'transform 0.2s ease-out', // Smooth transition for UI changes
   };
 
   return (
@@ -48,7 +54,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
       
       {/* Card Content */}
       <div className="relative z-10 p-4 h-full flex flex-col items-center">
-        {/* Header: Club & Nation */}
+        {/* Header: Club & Nation Logos (Stay at the top) */}
         <div className="w-full flex justify-between items-start mb-1">
           <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 p-1.5 flex items-center justify-center overflow-hidden shadow-lg">
             {playerData.clubLogoUrl ? (
@@ -66,7 +72,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
           </div>
         </div>
 
-        {/* Ultra Massive Central Player Image */}
+        {/* Central Player Image Area - Maximized size */}
         <div 
           className="relative w-56 h-56 cursor-pointer group/photo -mt-1"
           onClick={onPhotoClick}
@@ -87,7 +93,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
               </div>
             )}
             
-            {/* Hover UI */}
+            {/* Click to adjust overlay */}
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/photo:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
               <Crop size={32} className="text-white" />
               <span className="text-[10px] font-bold text-white uppercase tracking-widest">Zoom Face</span>
@@ -100,7 +106,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
           </div>
         </div>
 
-        {/* Player Identity Section */}
+        {/* Player Identity Section - Name and Nationality only */}
         <div className="text-center w-full mt-auto mb-1">
           <h2 className="text-2xl font-black tracking-tighter text-white uppercase drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] leading-none truncate px-2 mb-1">
             {String(playerData.name || "UNNAMED")}
@@ -110,7 +116,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ playerData, cardRef, onPhotoCli
           </div>
         </div>
 
-        {/* Minimal Footer */}
+        {/* Minimal Footer branding */}
         <div className="w-full pt-1.5 border-t border-white/10 flex justify-between items-center text-[6px] text-white/30 uppercase font-bold tracking-[0.4em]">
           <div className="flex items-center gap-1">
             <Zap size={6} className="text-[#ff0055]" />

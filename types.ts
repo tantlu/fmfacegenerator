@@ -1,14 +1,4 @@
 
-// Defined PlayerStats interface used by StatsRadar component
-export interface PlayerStats {
-  pace: number;
-  shooting: number;
-  passing: number;
-  dribbling: number;
-  defending: number;
-  physical: number;
-}
-
 export interface PlayerData {
   name: string;
   club: string;

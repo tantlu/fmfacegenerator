@@ -27,16 +27,13 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ image, onCropComplete, onCa
   }, []);
 
   const handleConfirm = () => {
-    if (croppedAreaPixels) {
-      // Return the raw transformation values
-      // We negate the pixel offsets to match CSS translate behavior
-      // Zoom from EasyCrop works slightly differently than standard CSS scale, but it's consistent here
-      onCropComplete({
-        zoom: zoom,
-        x: -crop.x,
-        y: -crop.y
-      });
-    }
+    // Return the crop values directly. 
+    // react-easy-crop 'crop' is in percent of the image.
+    onCropComplete({
+      zoom: zoom,
+      x: crop.x,
+      y: crop.y
+    });
   };
 
   return (
